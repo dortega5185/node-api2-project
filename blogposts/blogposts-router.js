@@ -21,13 +21,34 @@ router.get("/:id", (req, res) => {
       if (posts) {
         res.status(200).json(posts);
       } else {
-        res.status(404).json({ message: "Posts not found" });
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
       }
     })
     .catch((error) => {
       console.log(error);
       res.status(500).json({
-        message: "Error retrieving the hub",
+        error: "The post information could not be retrieved.",
+      });
+    });
+});
+
+router.get("/:id/comments", (req, res) => {
+  Blogs.findCommentById(req.params.id)
+    .then((comment) => {
+      if (comment === undefined || comment.length === 0) {
+        res.status(404).json({
+          message: "The post with the specified ID does not exist.",
+        });
+      } else {
+        res.status(200).json(comment);
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        error: "The comments information could not be retrieved.",
       });
     });
 });
@@ -86,6 +107,56 @@ router.post("/:id/comments", (req, res) => {
     .catch((error) => {
       res.status(500).json({
         error: "There was an error while saving the comment to the database",
+      });
+    });
+});
+
+router.delete("/:id", (req, res) => {
+  Blogs.remove(req.params.id)
+    .then((posts) => {
+      console.log(posts);
+      if (posts) {
+        res.status(200).json(posts);
+      } else {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        error: "The post could not be removed.",
+      });
+    });
+});
+
+router.put("/:id", (req, res) => {
+  const id = req.params.id;
+  const post = req.body;
+  Blogs.update(id, post)
+    .then((posts) => {
+      if (posts === undefined || posts.length === 0 || !posts) {
+        res.status(404).json({
+          message: "The post with the specified ID does not exist.",
+        });
+      } else if (
+        post.title === undefined ||
+        post.title === "" ||
+        post.contents === undefined ||
+        post.contents === ""
+      ) {
+        res.status(400).json({
+          error: "Please provide title and contents for the post.",
+        });
+      } else {
+        res.status(200).json(posts);
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        error: "Please provide title and contents for the post.",
       });
     });
 });
